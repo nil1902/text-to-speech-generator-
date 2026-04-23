@@ -40,12 +40,12 @@ async def generate_audio(text: str, voice_type: str, emotion: str, speed: float)
     pitch_str = emotion_rates["pitch"]
     
     output_filename = f"{uuid.uuid4().hex}.mp3"
-    output_path = os.path.join("static", "audio", output_filename)
+    output_path = os.path.join("/tmp", output_filename)
     
     # Initialize Engine
     communicate = edge_tts.Communicate(text, voice, rate=rate_str, pitch=pitch_str)
     
-    # Save directly to our static folder
+    # Save to /tmp (required for Vercel/Serverless read-only file systems)
     await communicate.save(output_path)
     
-    return output_filename
+    return output_path

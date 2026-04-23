@@ -118,10 +118,9 @@ generateBtn.addEventListener('click', async () => {
             throw new Error(errorMessage);
         }
 
-        const data = await response.json();
-        // The backend returns a relative url like /static/audio/...
-        // We prepend API_BASE_URL so it works via separate domain deployments
-        currentAudioUrl = API_BASE_URL + data.audio_url;
+        const blob = await response.blob();
+        // Create a local blob URL for the audio file
+        currentAudioUrl = URL.createObjectURL(blob);
 
         // Display Audio Player
         audioPlayer.src = currentAudioUrl;
@@ -143,13 +142,11 @@ generateBtn.addEventListener('click', async () => {
 // Download action
 downloadBtn.addEventListener('click', () => {
     if (currentAudioUrl) {
-        // url is like `https://my-backend.../static/audio/filename.mp3` or `/static/audio/filename.mp3`
-        const filename = currentAudioUrl.split('/').pop();
         const a = document.createElement('a');
-        a.href = `${API_BASE_URL}/download/${filename}`;
+        a.href = currentAudioUrl;
         
         // Ensure browser triggers a download instead of opening a new tab
-        a.setAttribute("download", "");
+        a.setAttribute("download", "vocify_audio.mp3");
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -206,10 +203,9 @@ function addHistoryItem(text, voice, emotion, url) {
     dlBtn.style.padding = '0.4rem 0.8rem';
     dlBtn.textContent = 'Download';
     dlBtn.addEventListener('click', () => {
-        const filename = url.split('/').pop();
         const a = document.createElement('a');
-        a.href = `${API_BASE_URL}/download/${filename}`;
-        a.setAttribute("download", "");
+        a.href = url;
+        a.setAttribute("download", "vocify_audio.mp3");
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

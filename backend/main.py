@@ -11,7 +11,6 @@ from backend.tts_engine import generate_audio
 app = FastAPI(title="TTS Web App")
 
 # Create required directories
-os.makedirs(os.path.join("static", "audio"), exist_ok=True)
 os.makedirs("frontend", exist_ok=True)
 
 app.add_middleware(
@@ -28,18 +27,12 @@ class TTSRequest(BaseModel):
     emotion: str
     speed: float
 
-def cleanup_old_files():
-    """Delete audio files older than 1 hour to save disk space."""
-    audio_dir = os.path.join("static", "audio")
-    now = time.time()
-    for filename in os.listdir(audio_dir):
-        file_path = os.path.join(audio_dir, filename)
-        if os.path.isfile(file_path):
-            if os.stat(file_path).st_mtime < now - 3600:
-                try:
-                    os.remove(file_path)
-                except:
-                    pass
+def cleanup_old_files(path: str):
+    """Delete audio file after sending it."""
+    try:
+        os.remove(path)
+    except:
+        pass
 
 @app.post("/generate-speech")
 async def generate_speech(request: TTSRequest, background_tasks: BackgroundTasks):
@@ -50,23 +43,17 @@ async def generate_speech(request: TTSRequest, background_tasks: BackgroundTasks
         raise HTTPException(status_code=400, detail="Text exceeds character limit of 5000")
         
     try:
-        # Generate the audio file asynchronously
-        filename = await generate_audio(request.text.strip(), request.voice, request.emotion, request.speed)
+        # Generate the audio file asynchronously in /tmp
+        file_path = await generate_audio(request.text.strip(), request.voice, request.emotion, request.speed)
         
-        # Schedule cleanup task
-        background_tasks.add_task(cleanup_old_files)
+        # Schedule cleanup task to delete the file after it is sent
+        background_tasks.add_task(cleanup_old_files, file_path)
         
-        return {"audio_url": f"/static/audio/{filename}"}
+        # Return the file directly as a binary stream
+        return FileResponse(file_path, media_type="audio/mpeg", filename=os.path.basename(file_path))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/download/{filename}")
-async def download_file(filename: str):
-    file_path = os.path.join("static", "audio", filename)
-    if os.path.exists(file_path):
-        return FileResponse(file_path, media_type="audio/mpeg", filename=filename)
-    else:
-        raise HTTPException(status_code=404, detail="File not found")
 
 
 # Mount static files and frontend
