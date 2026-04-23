@@ -10,7 +10,12 @@ EMOTION_MODIFIERS = {
     "Sad": {"rate": "-15%", "pitch": "-10Hz"},
     "Angry": {"rate": "+15%", "pitch": "-5Hz"},
     "Excited": {"rate": "+20%", "pitch": "+15Hz"},
-    "Calm": {"rate": "-10%", "pitch": "-5Hz"}
+    "Calm": {"rate": "-10%", "pitch": "-5Hz"},
+    "Fearful": {"rate": "+25%", "pitch": "+20Hz"},
+    "Surprised": {"rate": "+15%", "pitch": "+15Hz"},
+    "Serious": {"rate": "-5%", "pitch": "-15Hz"},
+    "Gentle": {"rate": "-10%", "pitch": "-2Hz"},
+    "Disgusted": {"rate": "-5%", "pitch": "-8Hz"}
 }
 
 # Example Neural voices (High quality)
