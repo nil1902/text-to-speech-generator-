@@ -10,8 +10,15 @@ from backend.tts_engine import generate_audio
 
 app = FastAPI(title="TTS Web App")
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
 # Create required directories
-os.makedirs("frontend", exist_ok=True)
+try:
+    os.makedirs(FRONTEND_DIR, exist_ok=True)
+except OSError:
+    pass # In read-only filesystems (like Vercel), this will fail but the directory should already exist
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,11 +64,11 @@ async def generate_speech(request: TTSRequest, background_tasks: BackgroundTasks
 
 
 # Mount static files and frontend
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 @app.get("/")
 def read_index():
-    return FileResponse(os.path.join("frontend", "index.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
 # Catch-all for other frontend files (css, js)
-app.mount("/", StaticFiles(directory="frontend"), name="frontend")
+app.mount("/", StaticFiles(directory=FRONTEND_DIR), name="frontend")
