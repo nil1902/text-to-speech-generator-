@@ -102,8 +102,9 @@ generateBtn.addEventListener('click', async () => {
 
         if (!response.ok) {
             let errorMessage = 'Failed to generate speech';
+            const errorText = await response.text();
             try {
-                const errorData = await response.json();
+                const errorData = JSON.parse(errorText);
                 if (errorData.detail) {
                     // Pydantic validation errors format detail as an array, standard HTTP errors format detail as string
                     errorMessage = Array.isArray(errorData.detail) 
@@ -112,7 +113,7 @@ generateBtn.addEventListener('click', async () => {
                 }
             } catch (e) {
                 // If parsing JSON fails, fallback to standard error message
-                errorMessage = await response.text() || errorMessage;
+                errorMessage = errorText || errorMessage;
             }
             throw new Error(errorMessage);
         }
